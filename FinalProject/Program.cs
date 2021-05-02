@@ -3,7 +3,35 @@ using System.IO;
 using System.Collections.Generic;
 
 namespace FinalProject {
+    public class ErrorHandling {
+        private int _lineNumber;
+        private string _type;
+        private string _badString;
+        private string _reasonForError;
+        public LinkedList<ErrorHandling> exceptionsList = new LinkedList<ErrorHandling>();
+        public ErrorHandling(string type, int lineNumber, string badString, string reasonForError) {
+            _type = type;
+            _lineNumber = lineNumber;
+            _badString = badString;
+            _reasonForError = reasonForError;
+            exceptionsList.AddLast(this);
+            this.log_error();
+        }
+        public string error_return() {
+            string returnString = "";
+            foreach (var item in exceptionsList) {                
+                returnString +=
+                    $"Error parsing {_type} entry on line {_lineNumber}. \n" +
+                    $"\t{_badString} \n" +
+                    $"{_reasonForError}\n";
+            }
+            return returnString;
+        }
 
+        public void log_error() {
+            Console.WriteLine(error_return());
+        }
+    }
     public class Media {
 
         const int TYPE = 0, TITLE = 1, COPYRIGHT_YEAR = 2;
@@ -11,12 +39,22 @@ namespace FinalProject {
         public string type;
         public string title;
         public int copyrightYear;
+        private int _lineNumber;
+        public int lineNumber {
+            get {
+                return _lineNumber;
+            }
+            set {
+                _lineNumber = value;
+            }
+        }
         public static LinkedList<Media> mediaStorage = new LinkedList<Media>();
         //this linked list stores all the Media objects so functions can be called at will
         //as opposed to just when they are read in the file
 
-        public virtual void parse_array_to_var(string[] input) {
-            switch (input[TYPE]) {
+        public virtual void parse_array_to_var(string[] parsestring, int lineCount) {
+            ErrorHandling error = null;   
+            switch (parsestring[TYPE]) {
                 case BOOK:
                     type = "Book";
                     break;
@@ -26,24 +64,35 @@ namespace FinalProject {
                 case MOVIE:
                     type = "Movie";
                     break;
-            }
-            title = input[TITLE];
-            copyrightYear = Int32.Parse(input[COPYRIGHT_YEAR]);
+                default:
+                    error = new ErrorHandling(
+                            "undefined", lineCount, String.Join(",", parsestring), 
+                            $"Type is invalid. Must be either a book ({BOOK}), movie ({MOVIE}), or magazine ({MAGAZINE}).");
+                    break;
+                }
+                
 
+            title = parsestring[TITLE];
+            copyrightYear = Int32.Parse(parsestring[COPYRIGHT_YEAR]);
         }
+
+
         public static void read_data() {
             //code from class github
             string fileName = "testcase.txt";
             StreamReader streamReader = new StreamReader(fileName);
             string inputLine = streamReader.ReadLine();
+            int lineCount = 1;
             while (null != inputLine) {
-                Program.to_array(inputLine);
+                if (inputLine == "") {
+                    inputLine = streamReader.ReadLine();
+                    lineCount += 1;
+                    continue;
+                }
+                Program.to_array(inputLine, lineCount);
                 inputLine = streamReader.ReadLine();
+                lineCount += 1;
             }
-        }
-
-        public static void test_parse() {
-            //all error stuff goes here, test wrapper for parse_array_to_var
         }
 
         public static int number_of_records() {
@@ -55,9 +104,9 @@ namespace FinalProject {
         }
 
         public static int oldest_copyright_year() {
-            int oldest = 0;
+            int oldest = Int32.MaxValue;
             foreach(var record in mediaStorage) {
-                if (record.copyrightYear > oldest) {
+                if (record.copyrightYear < oldest) {
                     oldest = record.copyrightYear;
                 }
             }
@@ -65,9 +114,9 @@ namespace FinalProject {
         }
 
         public static int newest_copyright_year() {
-            int youngest = Int32.MaxValue;
+            int youngest = 0;
             foreach(var record in mediaStorage) {
-                if (record.copyrightYear < youngest) {
+                if (record.copyrightYear > youngest) {
                     youngest = record.copyrightYear;
                 }
             }
@@ -81,8 +130,8 @@ namespace FinalProject {
         int numberOfPages;
         string author;
 
-        public override void parse_array_to_var(string[] input) {
-            base.parse_array_to_var(input);
+        public override void parse_array_to_var(string[] input, int lineCount = 0) {
+            base.parse_array_to_var(input, this.lineNumber);
             numberOfPages = Int32.Parse(input[NUMBER_OF_PAGES]);
             author = input[AUTHOR];
         }
@@ -93,8 +142,8 @@ namespace FinalProject {
     class Magazine : Media {
         const int EDITOR = 3;
         string editor;
-        public override void parse_array_to_var(string[] input) {
-            base.parse_array_to_var(input);
+        public override void parse_array_to_var(string[] input, int lineCount = 0) {
+            base.parse_array_to_var(input, this.lineNumber);
             editor = input[EDITOR];
         }
 
@@ -105,8 +154,8 @@ namespace FinalProject {
         const int LENGTH_IN_MINUTES = 3, RELEASE_DATE = 4;
         int lengthInMinutes;
         DateTime releaseDate;
-        public override void parse_array_to_var(string[] input) {
-            base.parse_array_to_var(input);
+        public override void parse_array_to_var(string[] input, int lineCount = 0) {
+            base.parse_array_to_var(input, this.lineNumber);
             lengthInMinutes = Int32.Parse(input[LENGTH_IN_MINUTES]);
             releaseDate = DateTime.Parse(input[RELEASE_DATE]);
         }
@@ -117,7 +166,7 @@ namespace FinalProject {
     public static class Program {
         
 
-        public static void to_array(string input) {
+        public static void to_array(string input, int line) {
             ///This method takes the read string and parses it a string arrray. 
             ///It also passes the data to its type specific class
 
@@ -127,28 +176,27 @@ namespace FinalProject {
                 switch (title_of_media) {
                     case Media.BOOK:
                         Book bookObj = new Book();
-                        bookObj.parse_array_to_var(tempArray);
+                        bookObj.lineNumber = line;
+                        bookObj.parse_array_to_var(tempArray, line);
                         Media.mediaStorage.AddLast(bookObj);
                         break;
                     case Media.MAGAZINE:
                         Magazine magObj = new Magazine();
-                        magObj.parse_array_to_var(tempArray);
+                        magObj.lineNumber = line;
+                        magObj.parse_array_to_var(tempArray, line);
                         Media.mediaStorage.AddLast(magObj);
                         break;
                     case Media.MOVIE:
                         Movie movObj = new Movie();
-                        movObj.parse_array_to_var(tempArray);
+                        movObj.lineNumber = line;
+                        movObj.parse_array_to_var(tempArray, line);
                         Media.mediaStorage.AddLast(movObj);
                         break;
-                }//might change parse to error stuff that includes parse inside it
+                }
             }
             catch {
-                //log 
+                ErrorHandling error = new ErrorHandling("Type", line, "x", "y");
             }
-
-        }
-
-        public static void parse_overhead() {
 
         }
 
