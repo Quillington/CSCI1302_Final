@@ -1,7 +1,5 @@
 ﻿using System;
 using System.IO;
-// todo add constructors to baby classes and have them set types
-// fix all vars
 
 namespace FinalProject {
 
@@ -28,8 +26,7 @@ namespace FinalProject {
         }
 
         static void create_obj(string input, int line) {
-            // This method is a wrapper function because I struggled 
-            // to use default in order to do error stuff.
+
             bool create_obj_bool(string inputInside) {
                 string[] tempArray = inputInside.Split(",");
                 string type = tempArray[0];
@@ -55,7 +52,7 @@ namespace FinalProject {
             }
 
             if (!create_obj_bool(input)) {
-                ErrorHandling error = new ErrorHandling(
+                ErrorHandling.error_create_and_add_list(
                             "Unknown", line, input, $"Type is invalid. " +
                             $"Must be either a book ({Media.BOOK}), magazine ({Media.MAGAZINE}), or movie ({Media.MOVIE}).");
             }
@@ -99,7 +96,7 @@ namespace FinalProject {
             }
             Console.Write($"This information is saved in the file {LOG_DATA_NAME}.");
         }
-        public static void prettify() {
+        public static void prettify_and_write() {
             // there's probably a better library for this but...
 
             // alignment is based on how long "Newest Copyright Year" is on the left 
@@ -137,7 +134,7 @@ namespace FinalProject {
 
         static void Main(string[] args) {
             read_data();
-            prettify();
+            prettify_and_write();
             print_data_log();
             ErrorHandling.log_error();
         }

@@ -7,17 +7,23 @@ public class ErrorHandling {
     private string _type;
     private string _badString;
     private string _reasonForError;
+
     public static bool didLogDataFail = false;
     public const string LOG_ERROR_NAME = "logerror.txt";
     public static List<ErrorHandling> exceptionsList = new List<ErrorHandling>();
+
     public ErrorHandling(string type, int lineNumber, string badString, string reasonForError, Media obj = null) {
         _type = type;
         _lineNumber = lineNumber;
         _badString = badString;
         _reasonForError = reasonForError;
-        Media.mediaStorage.Remove(obj);
-        exceptionsList.Add(this);
     }
+    public static void error_create_and_add_list(string type, int lineNumber, string badString, string reasonForError, Media obj = null) {
+        ErrorHandling error = new ErrorHandling(type, lineNumber, badString, reasonForError, obj);
+        exceptionsList.Add(error);
+        Media.mediaStorage.Remove(obj);
+    }
+
     string error_return() {
         string returnString = "";
             returnString +=

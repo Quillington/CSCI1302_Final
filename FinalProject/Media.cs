@@ -4,19 +4,16 @@ using System.Collections.Generic;
 public class Media {
 
     const int TYPE = 0, TITLE = 1, COPYRIGHT_YEAR = 2;
-    public const string BOOK = "1", MAGAZINE = "2", MOVIE = "3";
-    public string type;
-    public string title;
-    public int copyrightYear;
+    public const string BOOK = "1", MAGAZINE = "2", MOVIE = "3"; 
+    public string type { get => _type; set => _type = value; }
+    private string _type;
+    public string title { get => _title; set => _title = value; }
+    private string _title;
+    public int copyrightYear { get => _copyrightYear; set => _copyrightYear = value; }
+    private int _copyrightYear;
+    public int lineNumber { get => _lineNumber; set => _lineNumber = value; }
     private int _lineNumber;
-    public int lineNumber {
-        get {
-            return _lineNumber;
-        }
-        set {
-            _lineNumber = value;
-        }
-    }
+
     public static List<Media> mediaStorage = new List<Media>();
 
     public virtual void parse_array_to_var(string[] parseString) {
@@ -26,7 +23,7 @@ public class Media {
                 title = parseStringInside[TITLE];
             }
             catch {
-                ErrorHandling error = new ErrorHandling(
+                ErrorHandling.error_create_and_add_list(
                         type, lineNumber, String.Join(",", parseStringInside), $"Type is invalid. " +
                         $"Must be either a book ({Media.BOOK}), movie ({Media.MOVIE}), " +
                         $"or magazine ({Media.MAGAZINE}).", this);
@@ -35,17 +32,17 @@ public class Media {
         void parse_copyright_year(string[] parseStringInside) {
             try {
                 const int MIN_COPYRIGHT_YEAR = 1790; 
-                // apparently this is when the Constitution gave power for copyright..
+                // apparently this is when the US Constitution gave power for copyright..
                 // the more you know.
                 copyrightYear = Int32.Parse(parseStringInside[COPYRIGHT_YEAR]);
                 if (copyrightYear > DateTime.Today.Year || copyrightYear < MIN_COPYRIGHT_YEAR) {
-                    ErrorHandling error = new ErrorHandling(
+                    ErrorHandling.error_create_and_add_list(
                             type, lineNumber, String.Join(",", parseStringInside),
                             "Copyright year is out of bounds.", this);
                 }
             }
             catch {
-                ErrorHandling error = new ErrorHandling(
+                ErrorHandling.error_create_and_add_list(
                     type, lineNumber, String.Join(",", parseStringInside),
                     "Copyright year field is invalid.", this);
             }
@@ -121,7 +118,7 @@ class Book : Media {
                 numberOfPages = Int32.Parse(inputInside[NUMBER_OF_PAGES]);
             }
             catch {
-                ErrorHandling error = new ErrorHandling("number of pages", lineNumber, String.Join(",", inputInside), 
+                ErrorHandling.error_create_and_add_list("number of pages", lineNumber, String.Join(",", inputInside), 
                     "Number of pages field is invalid.", this);
             }
         }
@@ -130,7 +127,7 @@ class Book : Media {
                 author = input[AUTHOR];
             }
             catch {
-                ErrorHandling error = new ErrorHandling("author", lineNumber, String.Join(",", inputInside), 
+                ErrorHandling.error_create_and_add_list("author", lineNumber, String.Join(",", inputInside), 
                     "Author field is invalid.", this);
             }
         }
@@ -156,7 +153,7 @@ class Magazine : Media {
                 editor = input[EDITOR];
             }
             catch {
-                ErrorHandling error = new ErrorHandling("editor", lineNumber, String.Join(",", inputInside), 
+                ErrorHandling.error_create_and_add_list("editor", lineNumber, String.Join(",", inputInside), 
                     "Editor field is invalid.", this);
             }
         }
@@ -181,7 +178,7 @@ class Movie : Media {
                 lengthInMinutes = Int32.Parse(input[LENGTH_IN_MINUTES]);
             }
             catch {
-                ErrorHandling error = new ErrorHandling("length in minutes", lineNumber, String.Join(",", inputInside), 
+                ErrorHandling.error_create_and_add_list("length in minutes", lineNumber, String.Join(",", inputInside), 
                     "Length in minutes field is invalid.", this);
             }
         }
@@ -190,7 +187,7 @@ class Movie : Media {
                 releaseDate = DateTime.Parse(input[RELEASE_DATE]);
             }
             catch {
-                ErrorHandling error = new ErrorHandling("release date", lineNumber, String.Join(",", inputInside), 
+                ErrorHandling.error_create_and_add_list("release date", lineNumber, String.Join(",", inputInside), 
                     "Release date is invalid.", this);
             }
         }
