@@ -20,28 +20,16 @@ public class Media {
     public static List<Media> mediaStorage = new List<Media>();
 
     public virtual void parse_array_to_var(string[] parseString) {
-        void parse_type(string[] parseStringInside) {
-            switch (parseStringInside[TYPE]) {
-                case BOOK:
-                    type = "Book";
-                    break;
-                case MAGAZINE:
-                    type = "Magazine";
-                    break;
-                case MOVIE:
-                    type = "Movie";
-                    break;
-            }
-        }
+
         void parse_title(string[] parseStringInside) {
             try {
                 title = parseStringInside[TITLE];
             }
             catch {
                 ErrorHandling error = new ErrorHandling(
-                            type, lineNumber, String.Join(",", parseStringInside), $"Type is invalid. " +
-                            $"Must be either a book ({Media.BOOK}), movie ({Media.MOVIE}), " +
-                            $"or magazine ({Media.MAGAZINE}).", this);
+                        type, lineNumber, String.Join(",", parseStringInside), $"Type is invalid. " +
+                        $"Must be either a book ({Media.BOOK}), movie ({Media.MOVIE}), " +
+                        $"or magazine ({Media.MAGAZINE}).", this);
             }
         }
         void parse_copyright_year(string[] parseStringInside) {
@@ -62,22 +50,17 @@ public class Media {
                     "Copyright year field is invalid.", this);
             }
         }
-        parse_type(parseString);
         parse_title(parseString);
         parse_copyright_year(parseString);
     }
 
     public static int number_of_records() {
-        int count = 0;
-        foreach (var record in mediaStorage) {
-            count += 1;
-        }
-        return count;
+        return mediaStorage.Count;
     }
 
     public static int oldest_copyright_year() {
         int oldest = Int32.MaxValue;
-        foreach (var record in mediaStorage) {
+        foreach (Media record in mediaStorage) {
             if (record.copyrightYear < oldest) {
                 oldest = record.copyrightYear;
             }
@@ -87,7 +70,7 @@ public class Media {
 
     public static int newest_copyright_year() {
         int youngest = 0;
-        foreach (var record in mediaStorage) {
+        foreach (Media record in mediaStorage) {
             if (record.copyrightYear > youngest) {
                 youngest = record.copyrightYear;
             }
@@ -128,6 +111,9 @@ class Book : Media {
     public int numberOfPages;
     string author;
 
+    public Book() {
+        type = "book";
+    }
     public override void parse_array_to_var(string[] input) {
         base.parse_array_to_var(input);
         void parse_number_of_pages(string[] inputInside) {
@@ -159,18 +145,22 @@ class Book : Media {
 class Magazine : Media {
     const int EDITOR = 3;
     string editor;
+    
+    public Magazine() {
+        type = "magazine";
+    }
     public override void parse_array_to_var(string[] input) {
         base.parse_array_to_var(input);
-        void parse_number_of_pages(string[] inputInside) {
+        void parse_editor(string[] inputInside) {
             try {
                 editor = input[EDITOR];
             }
             catch {
-                ErrorHandling error = new ErrorHandling("number of pages", lineNumber, String.Join(",", inputInside), 
+                ErrorHandling error = new ErrorHandling("editor", lineNumber, String.Join(",", inputInside), 
                     "Editor field is invalid.", this);
             }
         }
-        parse_number_of_pages(input);
+        parse_editor(input);
     }
 
 
@@ -180,6 +170,10 @@ class Movie : Media {
     const int LENGTH_IN_MINUTES = 3, RELEASE_DATE = 4;
     int lengthInMinutes;
     DateTime releaseDate;
+
+    public Movie() {
+        type = "movie";
+    }
     public override void parse_array_to_var(string[] input) {
         base.parse_array_to_var(input);
         void parse_length_in_minutes(string[] inputInside) {
@@ -187,8 +181,8 @@ class Movie : Media {
                 lengthInMinutes = Int32.Parse(input[LENGTH_IN_MINUTES]);
             }
             catch {
-                ErrorHandling error = new ErrorHandling("number of pages", lineNumber, String.Join(",", inputInside), 
-                    "Editor field is invalid.", this);
+                ErrorHandling error = new ErrorHandling("length in minutes", lineNumber, String.Join(",", inputInside), 
+                    "Length in minutes field is invalid.", this);
             }
         }
         void parse_release_date(string[] inputInside) {
@@ -196,8 +190,8 @@ class Movie : Media {
                 releaseDate = DateTime.Parse(input[RELEASE_DATE]);
             }
             catch {
-                ErrorHandling error = new ErrorHandling("number of pages", lineNumber, String.Join(",", inputInside), 
-                    "Editor field is invalid.", this);
+                ErrorHandling error = new ErrorHandling("release date", lineNumber, String.Join(",", inputInside), 
+                    "Release date is invalid.", this);
             }
         }
         parse_length_in_minutes(input);

@@ -30,7 +30,7 @@ public class ErrorHandling {
         Console.WriteLine("The log file was unable to be created. \n" +
             "Due to this, the errors are printed in console" +
             "as an emergency.");
-        foreach (var error in exceptionsList) {
+        foreach (ErrorHandling error in exceptionsList) {
             Console.WriteLine(error.error_return());
         }
     }
@@ -44,7 +44,7 @@ public class ErrorHandling {
                 writer.Write($"Logging statistic data failed and data is not properly" +
                     $"backed up to a file.\n\n");
             }
-            foreach (var error in exceptionsList) {
+            foreach (ErrorHandling error in exceptionsList) {
                 writer.Write(error.error_return());
             }
         }

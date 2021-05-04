@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+// todo add constructors to baby classes and have them set types
+// fix all vars
 
 namespace FinalProject {
 
@@ -9,7 +11,7 @@ namespace FinalProject {
 
         public static void read_data() {
             // half code from class github
-            string fileName = "testcase.txt";
+            const string fileName = "testcase.txt";
             StreamReader streamReader = new StreamReader(fileName);
             string inputLine = streamReader.ReadLine();
             int lineCount = 1;
@@ -29,33 +31,29 @@ namespace FinalProject {
             // This method is a wrapper function because I struggled 
             // to use default in order to do error stuff.
             bool create_obj_bool(string inputInside) {
-
                 string[] tempArray = inputInside.Split(",");
-                string title_of_media = tempArray[0];
-                switch (title_of_media) {
+                string type = tempArray[0];
+                Media media;
+
+                switch (type) {
                     case Media.BOOK:
-                        Book bookObj = new Book();
-                        bookObj.lineNumber = line;
-                        Media.mediaStorage.Add(bookObj);
-                        bookObj.parse_array_to_var(tempArray);
+                        media = new Book();
                         break;
                     case Media.MAGAZINE:
-                        Magazine magObj = new Magazine();
-                        magObj.lineNumber = line;
-                        magObj.parse_array_to_var(tempArray);
-                        Media.mediaStorage.Add(magObj);
+                        media = new Magazine();
                         break;
                     case Media.MOVIE:
-                        Movie movObj = new Movie();
-                        movObj.lineNumber = line;
-                        movObj.parse_array_to_var(tempArray);
-                        Media.mediaStorage.Add(movObj);
+                        media = new Movie();
                         break;
                     default:
                         return false;
                 }
+                media.lineNumber = line;
+                Media.mediaStorage.Add(media);
+                media.parse_array_to_var(tempArray);
                 return true;
             }
+
             if (!create_obj_bool(input)) {
                 ErrorHandling error = new ErrorHandling(
                             "Unknown", line, input, $"Type is invalid. " +
