@@ -17,9 +17,7 @@ public class Media {
             _lineNumber = value;
         }
     }
-    public static LinkedList<Media> mediaStorage = new LinkedList<Media>();
-    //this linked list stores all the Media objects so functions can be called at will
-    //as opposed to just when they are read in the file
+    public static List<Media> mediaStorage = new List<Media>();
 
     public virtual void parse_array_to_var(string[] parseString) {
         void parse_type(string[] parseStringInside) {
@@ -36,7 +34,6 @@ public class Media {
             }
         }
         void parse_title(string[] parseStringInside) {
-            //ErrorHandling.error_missing_data(this, String.Join(",", parseStringInside), parseStringInside[TITLE], "title");
             try {
                 title = parseStringInside[TITLE];
             }
@@ -48,9 +45,16 @@ public class Media {
             }
         }
         void parse_copyright_year(string[] parseStringInside) {
-            //ErrorHandling.error_missing_data(this, String.Join(",", parseStringInside), parseStringInside[COPYRIGHT_YEAR], "copyright year");
             try {
+                const int MIN_COPYRIGHT_YEAR = 1790; 
+                // apparently this is when the Constitution gave power for copyright..
+                // the more you know.
                 copyrightYear = Int32.Parse(parseStringInside[COPYRIGHT_YEAR]);
+                if (copyrightYear > DateTime.Today.Year || copyrightYear < MIN_COPYRIGHT_YEAR) {
+                    ErrorHandling error = new ErrorHandling(
+                            type, lineNumber, String.Join(",", parseStringInside),
+                            "Copyright year is out of bounds.", this);
+                }
             }
             catch {
                 ErrorHandling error = new ErrorHandling(
@@ -90,18 +94,43 @@ public class Media {
         }
         return youngest;
     }
-
+    public static int median_copyright_year() {
+        List<int> tempMedia = new List<int>();
+        foreach (Media media in mediaStorage) {
+            tempMedia.Add(media.copyrightYear);
+        }
+        tempMedia.Sort();
+        int length = tempMedia.Count;
+        // even median (average of two middle)
+        if (length % 2 == 0) {
+            int medianFirst = tempMedia[length / 2];
+            int medianSecond = tempMedia[(length / 2) + 1];
+            return (medianFirst + medianSecond) / 2;
+        }
+        else {
+            return tempMedia[(length / 2)];
+        }
+    }
+    public static int total_pages() {
+        // friend of mine told me about this "is" keyword and helped me out here.
+        int pages = 0;
+        foreach (Media media in mediaStorage) {
+            if (media is Book book) {
+                pages += book.numberOfPages;
+            }
+        }
+        return pages;
+    }
 }
 
 class Book : Media {
     const int NUMBER_OF_PAGES = 3, AUTHOR = 4;
-    int numberOfPages;
+    public int numberOfPages;
     string author;
 
     public override void parse_array_to_var(string[] input) {
         base.parse_array_to_var(input);
         void parse_number_of_pages(string[] inputInside) {
-            //ErrorHandling.error_missing_data(this, String.Join(",", inputInside), inputInside[AUTHOR], "author");
             try {
                 numberOfPages = Int32.Parse(inputInside[NUMBER_OF_PAGES]);
             }
@@ -111,7 +140,6 @@ class Book : Media {
             }
         }
         void parse_author(string[] inputInside) {
-            //ErrorHandling.error_missing_data(this, String.Join(",", inputInside), inputInside[NUMBER_OF_PAGES], "number of pages");
             try {
                 author = input[AUTHOR];
             }
@@ -122,6 +150,7 @@ class Book : Media {
         }
         parse_number_of_pages(input);
         parse_author(input);
+
     }
 
 
@@ -133,7 +162,6 @@ class Magazine : Media {
     public override void parse_array_to_var(string[] input) {
         base.parse_array_to_var(input);
         void parse_number_of_pages(string[] inputInside) {
-            //ErrorHandling.error_missing_data(this, String.Join(",", inputInside), inputInside[EDITOR], "editor");
             try {
                 editor = input[EDITOR];
             }
@@ -155,7 +183,6 @@ class Movie : Media {
     public override void parse_array_to_var(string[] input) {
         base.parse_array_to_var(input);
         void parse_length_in_minutes(string[] inputInside) {
-            //ErrorHandling.error_missing_data(this, String.Join(",", inputInside), inputInside[LENGTH_IN_MINUTES], "length in minutes", this);
             try {
                 lengthInMinutes = Int32.Parse(input[LENGTH_IN_MINUTES]);
             }
@@ -165,7 +192,6 @@ class Movie : Media {
             }
         }
         void parse_release_date(string[] inputInside) {
-            //ErrorHandling.error_missing_data(this, String.Join(",", inputInside), inputInside[RELEASE_DATE], "release date", this);
             try {
                 releaseDate = DateTime.Parse(input[RELEASE_DATE]);
             }
